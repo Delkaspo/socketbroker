@@ -14,6 +14,13 @@ Broadcast events to connected parties.
 									|
 									+------> Cassandra
 ```
+### Write a plugin
+
+```
+type Client interface {
+	Send(interface{})
+}
+```
 
 ### Usage:
 
