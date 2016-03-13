@@ -69,6 +69,7 @@ output:
 - [x] HttpGetHook
 - [x] Slack
 - [x] Websocket
+- [ ] Protobuf
 - [ ] Rmq
 - [ ] Cassandra
 
