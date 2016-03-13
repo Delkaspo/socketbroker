@@ -1,18 +1,18 @@
-package plugin
+package clients
 
 import (
-	"net/http"
-	"encoding/json"
 	"bytes"
-	"log"
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
 )
 
 type SlackClient struct {
-	Token string
-	Channel string
+	Token    string
+	Channel  string
 	Username string
-	Icon string
+	Icon     string
 }
 
 func (s *SlackClient) Send(d interface{}) {

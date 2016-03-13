@@ -1,10 +1,10 @@
-package plugin
+package clients
 
 import (
-	"net/http"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"log"
+	"net/http"
 )
 
 type HttpPostClient struct {

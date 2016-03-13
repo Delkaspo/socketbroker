@@ -17,12 +17,18 @@ Broadcast events to connected parties.
 
 ### Usage:
 
+See examples folder for real examples.
+
+- Simple handler
+- Websocket multi broker handler
+
+Simple:
 ```
 package main 
 
 import (
 	"time"
-	"github.com/SamuelRamond/socketbroker/plugin"
+	"github.com/SamuelRamond/socketbroker/clients"
 	"github.com/SamuelRamond/socketbroker"
 )
 
@@ -31,8 +37,8 @@ func main() {
 	go b.Run()
 
 	// Register clients
-	b.Subscribe(&plugin.LogClient{})
-	b.Subscribe(&plugin.HttpGetClient{
+	b.Subscribe(&clients.LogClient{})
+	b.Subscribe(&clients.HttpGetClient{
 		Url: "http://url.to.your.hook",
 	})
 
@@ -62,7 +68,7 @@ output:
 - [x] HttpPostHook
 - [x] HttpGetHook
 - [x] Slack
-- [ ] Websocket
+- [x] Websocket
 - [ ] Rmq
 - [ ] Cassandra
 

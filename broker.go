@@ -10,6 +10,7 @@ type Client interface {
 
 type SocketBroker struct {
 	Name string
+	UUID string
 
 	bcast       chan interface{}
 	subscribe   chan Client
@@ -34,25 +35,25 @@ func (sb *SocketBroker) Run() {
 		select {
 		case c := <-sb.subscribe:
 			sb.clients[c] = true
-			log.Printf("New subscriber ! (live %d)\n", len(sb.clients))
+			log.Printf("Broker %s: New subscriber ! (live %d)\n", sb.UUID, len(sb.clients))
 		case c := <-sb.bcast:
 			for v, _ := range sb.clients {
 				v.Send(c)
 			}
 		case c := <-sb.unsubscribe:
 			delete(sb.clients, c)
-			log.Printf("A client left :( (live %d)\n", len(sb.clients))
+			log.Printf("Broker %s: A client left :( (live %d)\n", sb.UUID, len(sb.clients))
 		}
 	}
 }
 
-func New(name string) *SocketBroker {
+func New(name string, uuid string) *SocketBroker {
 	return &SocketBroker{
 		Name:        name,
+		UUID:        uuid,
 		bcast:       make(chan interface{}),
 		subscribe:   make(chan Client),
 		unsubscribe: make(chan Client),
 		clients:     make(map[Client]bool),
 	}
 }
-
