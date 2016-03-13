@@ -12,7 +12,7 @@ type SocketBroker struct {
 	Name string
 	UUID string
 
-	bcast       chan interface{}
+	Bcast       chan interface{}
 	subscribe   chan Client
 	unsubscribe chan Client
 	clients     map[Client]bool
@@ -27,7 +27,7 @@ func (sb *SocketBroker) Unsubscribe(c Client) {
 }
 
 func (sb *SocketBroker) Broadcast(d interface{}) {
-	sb.bcast <- d
+	sb.Bcast <- d
 }
 
 func (sb *SocketBroker) Run() {
@@ -36,7 +36,7 @@ func (sb *SocketBroker) Run() {
 		case c := <-sb.subscribe:
 			sb.clients[c] = true
 			log.Printf("Broker %s: New subscriber ! (live %d)\n", sb.UUID, len(sb.clients))
-		case c := <-sb.bcast:
+		case c := <-sb.Bcast:
 			for v, _ := range sb.clients {
 				v.Send(c)
 			}
@@ -51,7 +51,7 @@ func New(name string, uuid string) *SocketBroker {
 	return &SocketBroker{
 		Name:        name,
 		UUID:        uuid,
-		bcast:       make(chan interface{}),
+		Bcast:       make(chan interface{}),
 		subscribe:   make(chan Client),
 		unsubscribe: make(chan Client),
 		clients:     make(map[Client]bool),

@@ -6,13 +6,17 @@ Broadcast events to connected parties.
 ### Summary:
 
 ```
+									+------> Log
+									|
 									+------> Websocket
 				  					|
-[data producer]---->SocketBroker----+------> HTTPPost
+[data producer]---->SocketBroker----+------> HTTP
 									|
 									+------> Slack
 									|
 									+------> Cassandra
+									|
+									+------> Protobuf
 ```
 ### Write a plugin
 
@@ -76,6 +80,7 @@ output:
 - [x] HttpGetHook
 - [x] Slack
 - [x] Websocket
+- [ ] BoltDB
 - [ ] Protobuf
 - [ ] Rmq
 - [ ] Cassandra

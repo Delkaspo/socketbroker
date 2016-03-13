@@ -10,11 +10,13 @@ import (
 	"time"
 )
 
-const wcli = `
-<html>
+const wcli = `<html>
 <body>
-<div>Room 1: <span id="data_1">No data</span></div>
-<div>Room 2: <span id="data_2">No data</span></div>
+<h3>Socket Broker Demo</h3>
+<h5>Room 1: (Producer is server hearthbeat)</h5>
+<p id="data_1">No data</p>
+<h5>Room 2: (Producer is js client)</h5>
+<p id="data_2">No data</p>
 
 <script>
 function ws(broker_uuid, data_id) {
@@ -31,9 +33,12 @@ function ws(broker_uuid, data_id) {
 	socket.onclose = function() {
 		document.getElementById(data_id).innerHTML = "Connection to server lost...";
 	}
+	return socket;
 }
 ws("0xff42", "data_1");
-ws("0xff21", "data_2");
+var r2 = ws("0xff21", "data_2");
+var i = 0;
+setInterval(function () {r2.send("Hello world, loop:"+i);i++;}, 1500);
 </script>
 </body>
 </html>
@@ -50,13 +55,17 @@ func main() {
 	b1.Subscribe(&sbplugin.LogClient{})
 	b2.Subscribe(&sbplugin.LogClient{})
 
+	// Create a WShandler
 	wsh := &sbplugin.SocketBrokerWsHandler{}
-	wsh.Init()
+	wsh.Init(sbplugin.SbWsHReadWrite)
+	
+	// Register your brokers
 	wsh.RegisterBroker(b1)
 	wsh.RegisterBroker(b2)
 
 	r := mux.NewRouter()
 
+	// Register the handler in the router
 	r.HandleFunc("/ws/broker/{broker_uuid}", wsh.Handle).Methods("GET", "OPTIONS")
 
 	r.HandleFunc("/client", func(w http.ResponseWriter, r *http.Request) {
@@ -73,8 +82,7 @@ func main() {
 	loop := 0
 	for {
 		<-time.After(time.Second)
-		b1.Broadcast(fmt.Sprintf("hello world, loop: %d", loop))
-		b2.Broadcast(fmt.Sprintf("EVXX, loop: %d", loop*2))
+		b1.Broadcast(fmt.Sprintf("Hello world, loop: %d", loop))
 		loop++
 	}
 }

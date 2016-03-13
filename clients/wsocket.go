@@ -11,6 +11,7 @@ import (
 type WSocketClient struct {
 	ws *websocket.Conn
 	out chan interface{}
+	bcast chan interface{}
 }
 
 func (c *WSocketClient) Send(d interface{}) {
@@ -19,11 +20,13 @@ func (c *WSocketClient) Send(d interface{}) {
 
 func (c *WSocketClient) fin() {
 	for {
-		n, in, err := c.ws.ReadMessage()
+		_, in, err := c.ws.ReadMessage()
 		if err != nil {
 			break
 		}
-		log.Println(n, string(in))
+		if c.bcast != nil {
+			c.bcast <- string(in)
+		}
 	}
 	c.ws.Close()
 }
@@ -43,14 +46,21 @@ func (c *WSocketClient) Run() {
 	c.fout()
 }
 
+const (
+	SbWsHReadOnly = iota
+	SbWsHReadWrite
+)
+
 type SocketBrokerWsHandler struct {
 	upg *websocket.Upgrader
 	brokers map[string]*socketbroker.SocketBroker
+	mode int
 }
 
-func (c *SocketBrokerWsHandler) Init() {
+func (c *SocketBrokerWsHandler) Init(mode int) {
 	c.upg = &websocket.Upgrader{ReadBufferSize: 2048, WriteBufferSize: 2048}
 	c.brokers = make(map[string]*socketbroker.SocketBroker)
+	c.mode = mode
 }
 
 // Register a broker to a ws handler so any client can get broker event via 
@@ -79,7 +89,15 @@ func (c *SocketBrokerWsHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Build client
-	cli := &WSocketClient{ws, make(chan interface{})}
+	var chanin chan interface{} 
+	if c.mode == SbWsHReadWrite {
+		chanin = c.brokers[buuid].Bcast
+	}
+	cli := &WSocketClient{
+		ws,
+		make(chan interface{}),
+		chanin,
+	}
 
 	c.brokers[buuid].Subscribe(cli)
 	cli.Run()
